@@ -49,15 +49,11 @@ int stbf_upload(const char* local_filename, char* ret_file_id) {
     g_log_context.log_level = LOG_ERR;
     ignore_signal_pipe();
 
-
-    if((pTrackerServer = tracker_get_connection_r(&trackerserver, &result)) ==
-        NULL) {
+    pTrackerServer = &trackerserver; 
+    tracker_get_connection_r(&trackerserver, &result);
+    
+    if(result != 0) {
         //fdfs_client_destroy();
-        return errno != 0 ? errno : ECONNREFUSED;
-    }
-    pTrackerServer = tracker_get_connection();
-    if (pTrackerServer == NULL) {
-        fdfs_client_destroy();
         return errno != 0 ? errno : ECONNREFUSED;
     }
 
@@ -88,7 +84,6 @@ int stbf_upload(const char* local_filename, char* ret_file_id) {
 
     tracker_disconnect_server(&storageServer);
     tracker_disconnect_server(&trackerserver);
-    tracker_disconnect_server(pTrackerServer);
     //tracker_disconnect_server_ex(pTrackerServer, true);
     return result;
 }
@@ -111,9 +106,9 @@ int stbf_download(const char* fdfs_id, char* local_path) {
     g_log_context.log_level = LOG_ERR;
     ignore_signal_pipe();
 
-
-    if((pTrackerServer = tracker_get_connection_r(&trackerserver, &result)) ==
-        NULL) {
+    pTrackerServer = &trackerserver;
+    tracker_get_connection_r(&trackerserver, &result);
+    if(result != 0){    
         //fdfs_client_destroy();
         return errno != 0 ? errno : ECONNREFUSED;
     }
@@ -130,7 +125,8 @@ int stbf_download(const char* fdfs_id, char* local_path) {
         return result;
     }
 
-    if((pStorageServer = tracker_connect_server(&storageServer, &result)) == NULL)
+    tracker_connect_server(&storageServer, &result);
+    if(result != 0)
     {
         fprintf(stderr,
                 "tracker_connect_server to storage server fail, "
@@ -168,7 +164,6 @@ int stbf_download(const char* fdfs_id, char* local_path) {
 
     //tracker_disconnect_server(pStorageServer);
     tracker_disconnect_server(&trackerserver);
-    tracker_disconnect_server(pTrackerServer);
 
     free(path_name);
 
@@ -184,8 +179,9 @@ int stbf_delete(const char* fdfs_id) {
     g_log_context.log_level = LOG_ERR;
     ignore_signal_pipe();
 
-    if((pTrackerServer = tracker_get_connection_r(&trackerserver, &result)) ==
-        NULL) {
+    pTrackerServer = &trackerserver;
+    tracker_get_connection_r(&trackerserver, &result);
+    if(result != 0){    
         //fdfs_client_destroy();
         return errno != 0 ? errno : ECONNREFUSED;
     }
@@ -199,7 +195,6 @@ int stbf_delete(const char* fdfs_id) {
     }
 
     tracker_disconnect_server(&trackerserver);
-    tracker_disconnect_server(pTrackerServer);
 
     return result;
 }
